@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/auth'
+import { getOAuthRedirectError } from '../lib/authError'
 import { Alert, GoogleButton } from './ui'
 
 /**
@@ -11,7 +12,8 @@ import { Alert, GoogleButton } from './ui'
  */
 export function SignInButton({ label = 'Continue with Google', redirectTo }) {
   const { signInWithGoogle } = useAuth()
-  const [error, setError] = useState('')
+  // A failure from a previous redirect back into the app, if there was one.
+  const [error, setError] = useState(getOAuthRedirectError)
   const [busy, setBusy] = useState(false)
 
   const handleClick = async () => {
