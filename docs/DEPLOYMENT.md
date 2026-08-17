@@ -14,13 +14,14 @@ to run.
 
 ---
 
-## 1. Enable Google sign-in (required)
+## 1. Google sign-in
 
-**Nothing else in the app works until this is done.** Signing in will fail with
-"Google sign-in has not been switched on for this project yet."
+**Status: configured and working** on the project above (verified 2026-08-17 — the
+`/auth/v1/authorize` endpoint redirects to Google with a live client ID).
 
-Google OAuth credentials can only be created by hand in the Google Cloud console — there
-is no API or CLI for it. This is the one manual step.
+Keep this section for setting up a *new* project or rotating credentials. Google OAuth
+credentials can only be created by hand in the Google Cloud console — there is no API or
+CLI for it, so this is the one step that cannot be scripted.
 
 ### a. Create the OAuth client
 
@@ -45,20 +46,23 @@ is no API or CLI for it. This is the one manual step.
 
 ### b. Give them to Supabase
 
-In `supabase/config.toml`, set `enabled = true` under `[auth.external.google]`, then:
+Either paste them into **Authentication → Sign In / Providers → Google** in the Supabase
+dashboard, or push them from the CLI:
 
 ```bash
-export SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID='<client id>'
 export SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET='<client secret>'
 supabase config push
 ```
 
-The secret is only ever read from the environment — `config.toml` holds an `env(...)`
-reference, so nothing sensitive is committed.
-
-> Prefer clicking? **Authentication → Sign In / Providers → Google** in the Supabase
-> dashboard takes the same two values. If you do it there, still set `enabled = true` in
-> `config.toml` so the next `config push` doesn't switch it back off.
+> [!WARNING]
+> `supabase config push` is authoritative: whatever `config.toml` says wins. If you
+> enable Google in the dashboard but leave `enabled = false` in `config.toml`, the next
+> `config push` silently switches sign-in back off. `config.toml` is therefore kept in
+> sync with the dashboard — `enabled = true` and the (public) client ID are committed.
+>
+> The **secret** is an `env(...)` reference and is never committed. An unset secret
+> produces no diff, so a `config push` without it is safe — it will not blank the
+> stored credential.
 
 ### c. Check it
 
@@ -111,14 +115,15 @@ Locally the same two values go in `.env.local`, which is gitignored.
 
 ## 4. Deploying
 
+The GitHub repo is connected, so **pushing to `main` deploys production** and every pull
+request gets its own preview URL. Preview hostnames are already covered by the redirect
+allow-list above, so sign-in works on them too.
+
+To deploy without pushing:
+
 ```bash
 vercel deploy --prod
 ```
-
-Connecting the GitHub repo in the Vercel dashboard (**Settings → Git**) gives you
-automatic deploys on push plus per-PR preview URLs. The CLI attempted this during setup
-and failed, which usually means the Vercel GitHub app hasn't been granted access to the
-repository yet.
 
 ## 5. Database changes
 

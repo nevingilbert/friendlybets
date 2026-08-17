@@ -8,10 +8,9 @@ honour system between the two people in a bet.
 
 **Live:** https://friendlybets-murex.vercel.app
 
-> [!IMPORTANT]
-> A fresh deployment cannot sign anyone in until Google OAuth is switched on for the
-> Supabase project. It's a five-minute, one-time task — see
-> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#1-enable-google-sign-in-required).
+Google sign-in is configured and working. Setting it up on a *new* Supabase project is
+the one step with no CLI — see
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#1-google-sign-in).
 
 ---
 

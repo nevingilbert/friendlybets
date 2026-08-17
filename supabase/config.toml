@@ -330,15 +330,19 @@ max_frequency = "5s"
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
 # FriendlyBets signs everyone in with Google — this is the only provider we use.
+# Enabled in the Supabase dashboard on 2026-08-17 and mirrored here, because
+# `supabase config push` is authoritative: leaving this false would silently
+# switch Google sign-in back off the next time anyone pushes config.
 #
-# To switch it on (see docs/DEPLOYMENT.md for how to get the two values):
-#   1. flip enabled to true below
-#   2. export SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=...
-#      export SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=...
-#   3. supabase config push
+# The client_id is public — it is visible in the redirect URL of every sign-in —
+# so it lives here. The secret never does.
+#
+# BEFORE RUNNING `supabase config push`, export the secret, or the push will
+# overwrite the working credentials with an empty one:
+#   export SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET='<client secret>'
 [auth.external.google]
-enabled = false
-client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+enabled = true
+client_id = "525073490980-i2iev0h7g951oj85e8af9vr8oc6cbp1v.apps.googleusercontent.com"
 # DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = ""
