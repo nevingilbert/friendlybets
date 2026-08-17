@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/auth'
 import { useLobbyData } from '../hooks/useLobbyData'
+import { useTicker } from '../hooks/useTicker'
 import { acceptBet } from '../lib/rpc'
 import { IconButton, TopBar } from '../components/TopBar'
 import { icons } from '../components/icons'
@@ -23,6 +24,9 @@ export default function LobbyFeed() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const { lobby, members, bets, loading, error, nameOf } = useLobbyData(lobbyId)
+
+  // Keeps the "2 minutes ago" captions honest on a screen nobody touches.
+  useTicker()
   const [tab, setTab] = useState('open')
   const [showCreate, setShowCreate] = useState(false)
   const [showShare, setShowShare] = useState(false)

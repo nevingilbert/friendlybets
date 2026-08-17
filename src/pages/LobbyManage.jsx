@@ -7,20 +7,12 @@ import {
   hostUndoAccept,
   leaveLobby,
   removeMember,
+  renameSelf,
   updateLobby,
 } from '../lib/rpc'
 import { formatRelative } from '../lib/format'
 import { TopBar } from '../components/TopBar'
-import {
-  Alert,
-  Avatar,
-  Button,
-  Card,
-  Field,
-  Input,
-  Spinner,
-  StatusPill,
-} from '../components/ui'
+import { Alert, Avatar, Button, Card, Input, Spinner, StatusPill } from '../components/ui'
 
 const STATUS_CHOICES = [
   { value: 'OPEN', label: 'Open', hint: 'Anyone with the link can join.' },
@@ -36,17 +28,21 @@ const STATUS_CHOICES = [
 export default function LobbyManage() {
   const { lobbyId } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile, setProfile } = useAuth()
   const { lobby, members, bets, loading, error, nameOf } = useLobbyData(lobbyId)
 
   // null means "untouched" — the field shows the live lobby name until the host
   // actually types, which avoids syncing state from props in an effect.
   const [draftName, setDraftName] = useState(null)
+  const [draftDisplayName, setDraftDisplayName] = useState(null)
   const [message, setMessage] = useState('')
   const [actionError, setActionError] = useState('')
   const [busy, setBusy] = useState(false)
 
   const name = draftName ?? lobby?.name ?? ''
+  // Google hands us a full legal name; most people want something shorter on
+  // the leaderboard.
+  const displayName = draftDisplayName ?? profile?.display_name ?? ''
 
   useEffect(() => {
     if (!message) return undefined
@@ -96,20 +92,51 @@ export default function LobbyManage() {
         <Alert>{actionError}</Alert>
         {message && <Alert tone="success">{message}</Alert>}
 
+        <Card className="p-5">
+          <h2 className="mb-1 font-semibold text-zinc-100">Your display name</h2>
+          <p className="mb-4 text-sm text-zinc-500">
+            This is what everyone in your lobbies sees.
+          </p>
+          <div className="flex gap-2">
+            <Input
+              className="flex-1"
+              aria-label="Your display name"
+              value={displayName}
+              maxLength={40}
+              onChange={(event) => setDraftDisplayName(event.target.value)}
+            />
+            <Button
+              className="shrink-0"
+              disabled={
+                busy || !displayName.trim() || displayName === profile?.display_name
+              }
+              onClick={() =>
+                run(async () => {
+                  const updated = await renameSelf(user.id, displayName.trim())
+                  setProfile(updated)
+                  setDraftDisplayName(null)
+                }, 'Name updated.')
+              }
+            >
+              Save
+            </Button>
+          </div>
+        </Card>
+
         {isHost && (
           <>
             <Card className="p-5">
               <h2 className="mb-4 font-semibold text-zinc-100">Lobby name</h2>
               <div className="flex gap-2">
-                <Field label="">
-                  <Input
-                    value={name}
-                    maxLength={60}
-                    onChange={(event) => setDraftName(event.target.value)}
-                  />
-                </Field>
+                <Input
+                  className="flex-1"
+                  aria-label="Lobby name"
+                  value={name}
+                  maxLength={60}
+                  onChange={(event) => setDraftName(event.target.value)}
+                />
                 <Button
-                  className="mt-0 self-start"
+                  className="shrink-0"
                   disabled={busy || !name.trim() || name === lobby.name}
                   onClick={() =>
                     run(async () => {

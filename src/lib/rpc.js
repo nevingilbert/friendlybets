@@ -105,10 +105,6 @@ export async function fetchBets(lobbyId) {
   )
 }
 
-export async function fetchBet(betId) {
-  return unwrap(await supabase.from('bets').select('*').eq('id', betId).maybeSingle())
-}
-
 export async function createBet(lobbyId, { proposition, stake, side }) {
   return unwrap(
     await supabase.rpc('create_bet', {

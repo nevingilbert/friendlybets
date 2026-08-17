@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLobbyData } from '../hooks/useLobbyData'
+import { useTicker } from '../hooks/useTicker'
 import { StatsBar } from '../components/dashboard/StatsBar'
 import { OpenBetsTicker } from '../components/dashboard/OpenBetsTicker'
 import { ActivityFeed } from '../components/dashboard/ActivityFeed'
@@ -18,6 +19,9 @@ import { Alert, Spinner } from '../components/ui'
 export default function LobbyDashboard() {
   const { lobbyId } = useParams()
   const { lobby, members, bets, leaderboard, loading, error, nameOf } = useLobbyData(lobbyId)
+
+  // Keeps the "2 minutes ago" captions honest on a screen nobody touches.
+  useTicker()
 
   const openBets = useMemo(() => bets.filter((bet) => bet.status === 'OPEN'), [bets])
 

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/auth'
 import { joinLobby, previewLobby } from '../lib/rpc'
-import { Alert, Button, Card, GoogleButton, Spinner } from '../components/ui'
+import { Alert, Button, Card, Spinner } from '../components/ui'
+import { SignInButton } from '../components/SignInButton'
 
 /**
  * Landing page for an invite link (/join/XK4P2M).
@@ -14,7 +15,7 @@ import { Alert, Button, Card, GoogleButton, Spinner } from '../components/ui'
 export default function JoinLobby() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const { user, loading: authLoading, signInWithGoogle } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   const [preview, setPreview] = useState(null)
   const [status, setStatus] = useState('loading') // loading | ready | joining | error
@@ -106,22 +107,22 @@ export default function JoinLobby() {
             </div>
           </Card>
 
-          {preview.status !== 'OPEN' ? (
-            <Alert tone="info">
-              This lobby is closed to new players. Ask {preview.host_name} to reopen it.
-            </Alert>
-          ) : status === 'joining' ? (
+          {status === 'joining' ? (
             <div className="flex items-center justify-center gap-3 text-sm text-zinc-400">
               <Spinner className="h-5 w-5" /> Joining…
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              <GoogleButton onClick={() => signInWithGoogle(window.location.href)}>
-                Sign in with Google to join
-              </GoogleButton>
-              <p className="text-center text-xs text-zinc-600">
-                We only ever read your name and profile picture.
-              </p>
+              {preview.status !== 'OPEN' && (
+                <Alert tone="info">
+                  {preview.host_name} has closed this lobby to new players. If you were
+                  already in it, signing in will still let you back.
+                </Alert>
+              )}
+              {/* Shown even for a closed lobby: join_lobby readmits an existing
+                  member before it checks the lobby status, so a member who is
+                  merely signed out still needs a way back in. */}
+              <SignInButton label="Sign in with Google to join" />
             </div>
           )}
         </>

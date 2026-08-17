@@ -2,6 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { fetchBets, fetchLeaderboard, fetchLobby, fetchMembers } from '../lib/rpc'
 
+async function loadEverything(lobbyId) {
+  const [lobby, members, bets, leaderboard] = await Promise.all([
+    fetchLobby(lobbyId),
+    fetchMembers(lobbyId),
+    fetchBets(lobbyId),
+    fetchLeaderboard(lobbyId),
+  ])
+  return { lobby, members: members ?? [], bets: bets ?? [], leaderboard: leaderboard ?? [] }
+}
+
+const NO_ACCESS = 'This lobby does not exist, or you have not joined it yet.'
+
 /**
  * Loads a lobby and keeps it live.
  *
@@ -10,6 +22,12 @@ import { fetchBets, fetchLeaderboard, fetchLobby, fetchMembers } from '../lib/rp
  * dashboard on the TV stay in sync without any server of our own. Bet rows
  * arrive as raw columns, so names are resolved locally against the roster —
  * that way a realtime row and a fetched row render identically.
+ *
+ * postgres_changes streams live WAL and never replays, so anything that happened
+ * while the socket was down is lost. Phones lock and WiFi blips, so the hook
+ * refetches whenever the channel (re-)subscribes, the tab becomes visible again,
+ * or the browser reports it is back online. Without that a backgrounded phone —
+ * or the TV after a 20-second blip — silently shows stale bets all evening.
  */
 export function useLobbyData(lobbyId) {
   const [lobby, setLobby] = useState(null)
@@ -33,9 +51,45 @@ export function useLobbyData(lobbyId) {
     }
   }, [])
 
+  const apply = useCallback(
+    (data) => {
+      setLobby(data.lobby)
+      setMembers(data.members)
+      setBets(data.bets)
+      setLeaderboard(data.leaderboard)
+      setFailure(null)
+      setLoadedFor(lobbyId)
+    },
+    [lobbyId],
+  )
+
+  /** Full resync. Safe to call repeatedly; never flips the UI back to a spinner. */
+  const refresh = useCallback(async () => {
+    try {
+      const data = await loadEverything(lobbyId)
+      if (!alive.current) return
+      if (!data.lobby) {
+        // RLS stopped returning the row — you were removed, or the lobby is gone.
+        setFailure({ lobbyId, message: NO_ACCESS })
+        return
+      }
+      apply(data)
+    } catch {
+      // A failed background refresh keeps whatever is on screen; the next
+      // reconnect or visibility change tries again.
+    }
+  }, [lobbyId, apply])
+
   const reloadMembers = useCallback(async () => {
     const rows = await fetchMembers(lobbyId).catch(() => null)
-    if (rows && alive.current) setMembers(rows)
+    if (!rows || !alive.current) return
+    // A lobby always contains at least its host, so an empty roster can only
+    // mean RLS stopped returning rows — i.e. you are no longer a member.
+    if (rows.length === 0) {
+      setFailure({ lobbyId, message: 'You are no longer in this lobby.' })
+      return
+    }
+    setMembers(rows)
   }, [lobbyId])
 
   const reloadLeaderboard = useCallback(async () => {
@@ -50,30 +104,13 @@ export function useLobbyData(lobbyId) {
 
     ;(async () => {
       try {
-        const [lobbyRow, memberRows, betRows, boardRows] = await Promise.all([
-          fetchLobby(lobbyId),
-          fetchMembers(lobbyId),
-          fetchBets(lobbyId),
-          fetchLeaderboard(lobbyId),
-        ])
+        const data = await loadEverything(lobbyId)
         if (cancelled) return
-
-        if (!lobbyRow) {
-          // RLS hides lobbies you are not in, so "no row" and "no access" are
-          // the same observable state.
-          setFailure({
-            lobbyId,
-            message: 'This lobby does not exist, or you have not joined it yet.',
-          })
+        if (!data.lobby) {
+          setFailure({ lobbyId, message: NO_ACCESS })
           return
         }
-
-        setLobby(lobbyRow)
-        setMembers(memberRows ?? [])
-        setBets(betRows ?? [])
-        setLeaderboard(boardRows ?? [])
-        setFailure(null)
-        setLoadedFor(lobbyId)
+        apply(data)
       } catch (err) {
         if (!cancelled) {
           setFailure({ lobbyId, message: err.message || 'Could not load this lobby.' })
@@ -84,7 +121,7 @@ export function useLobbyData(lobbyId) {
     return () => {
       cancelled = true
     }
-  }, [lobbyId])
+  }, [lobbyId, apply])
 
   // Realtime
   useEffect(() => {
@@ -96,6 +133,10 @@ export function useLobbyData(lobbyId) {
       // Bursts of accepts shouldn't each trigger their own round trip.
       boardTimer = setTimeout(reloadLeaderboard, 400)
     }
+
+    // The first SUBSCRIBED coincides with the initial fetch, so skip it; every
+    // later one is a rejoin after a drop and is exactly when we need to resync.
+    let subscribedBefore = false
 
     const channel = supabase
       .channel(`lobby:${lobbyId}`)
@@ -132,13 +173,36 @@ export function useLobbyData(lobbyId) {
           if (payload.eventType !== 'DELETE') setLobby(payload.new)
         },
       )
-      .subscribe()
+      // Display names live on profiles, which has no lobby_id to filter on.
+      // RLS already limits this to people you share a lobby with.
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, () => {
+        reloadMembers()
+      })
+      .subscribe((status) => {
+        if (status !== 'SUBSCRIBED') return
+        if (subscribedBefore) refresh()
+        subscribedBefore = true
+      })
 
     return () => {
       clearTimeout(boardTimer)
       supabase.removeChannel(channel)
     }
-  }, [lobbyId, reloadMembers, reloadLeaderboard])
+  }, [lobbyId, reloadMembers, reloadLeaderboard, refresh])
+
+  // A locked phone or a closed laptop lid kills the socket without any channel
+  // error, so waking the tab is its own resync trigger.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('online', refresh)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('online', refresh)
+    }
+  }, [refresh])
 
   const memberMap = useMemo(() => {
     const map = new Map()
@@ -167,7 +231,6 @@ export function useLobbyData(lobbyId) {
     loading,
     error,
     nameOf,
-    reloadMembers,
-    reloadLeaderboard,
+    refresh,
   }
 }

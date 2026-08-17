@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import { useAuth } from '../context/auth'
-import { Alert, GoogleButton } from '../components/ui'
+import { SignInButton } from '../components/SignInButton'
 
 const HIGHLIGHTS = [
   ['Start a lobby', 'One tap. You get a six-character code and a link.'],
@@ -9,25 +7,6 @@ const HIGHLIGHTS = [
 ]
 
 export default function SignInGate({ headline, subhead }) {
-  const { signInWithGoogle } = useAuth()
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  const handleSignIn = async () => {
-    setError('')
-    setBusy(true)
-    try {
-      await signInWithGoogle(window.location.href)
-      // The browser navigates to Google here; `busy` stays true on purpose.
-    } catch (err) {
-      const message = /provider is not enabled|unsupported provider/i.test(err.message)
-        ? 'Google sign-in has not been switched on for this project yet. See docs/DEPLOYMENT.md.'
-        : err.message
-      setError(message)
-      setBusy(false)
-    }
-  }
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-10 px-6 py-16">
       <header className="animate-fade-up">
@@ -57,15 +36,7 @@ export default function SignInGate({ headline, subhead }) {
         ))}
       </ul>
 
-      <div className="flex flex-col gap-3">
-        <Alert>{error}</Alert>
-        <GoogleButton onClick={handleSignIn} disabled={busy}>
-          {busy ? 'Redirecting…' : 'Continue with Google'}
-        </GoogleButton>
-        <p className="text-center text-xs text-zinc-600">
-          We only ever read your name and profile picture.
-        </p>
-      </div>
+      <SignInButton />
     </main>
   )
 }

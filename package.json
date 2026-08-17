@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "db:push": "supabase db push",
-    "db:diff": "supabase db diff"
+    "db:diff": "supabase db diff --linked"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

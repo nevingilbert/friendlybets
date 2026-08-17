@@ -119,6 +119,19 @@ only, no joins. Rather than fetch the creator's name on every event, the hook ke
 of the lobby roster and looks names up locally. A row that arrived over the wire and a row
 that was fetched then render through exactly the same path.
 
+**Reconnects need an explicit resync.** `postgres_changes` streams live WAL and never
+replays, so a rejoined channel picks up from *now* — everything that happened while the
+socket was down is gone. Phones lock, laptops sleep, WiFi blips, and none of that raises a
+channel error, so the hook refetches on three signals: a `SUBSCRIBED` after the first one
+(a rejoin), the tab becoming visible, and the browser reporting it is back online. Without
+this the app looks alive while its data is frozen — worst on the TV dashboard, which
+nobody ever navigates away from to force a remount.
+
+**An empty roster means you were removed.** RLS answers "not a member" with zero rows, not
+an error, so a refetch after the host removes you returns `[]` rather than failing. A lobby
+always contains at least its host, so the hook treats an empty roster as lost access and
+says so instead of silently rendering a lobby with no players in it.
+
 The leaderboard is the one thing recomputed server-side, via `lobby_leaderboard`. Bet
 events debounce a refresh of it by 400 ms so a burst of accepts costs one round trip.
 
