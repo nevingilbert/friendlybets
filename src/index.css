@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #09090b;
+  color: #fafafa;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* Stops iOS from zooming the page when a guest taps into an input. */
+  text-size-adjust: 100%;
+}
+
+/* Respect the notch / home indicator — guests use this on phones. */
+.safe-bottom {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@keyframes fbFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fbPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fbFadeUp 0.25s ease-out both;
+}
+
+.animate-pop {
+  animation: fbPop 0.18s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-pop {
+    animation: none;
+  }
+}
+
+/* Subtle scrollbars so the TV dashboard doesn't show chunky OS bars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #3f3f46;
+  border-radius: 9999px;
+}
