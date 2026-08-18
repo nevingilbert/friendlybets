@@ -15,6 +15,40 @@ What exists today, and what's been considered but not built. Specs live in
 - Host moderation: delete a bet, reopen a mistaken accept, remove a player
 - Row Level Security isolating every lobby, verified end to end
 
+## Verified in production
+
+Exercised end to end on 2026-08-18 by two real accounts on separate devices: Google
+sign-in, create lobby, join via invite link (63 seconds from link to lobby), post a bet,
+accept it, resolve it, mark the stake paid. Winner derivation and the standings'
+owes-vs-settled split both came out correct.
+
+## Loose ends
+
+Not features — things that are built but have never been looked at, or facts about the
+deployment that were never pinned down.
+
+- [ ] **Open the big-screen dashboard** (`/lobby/<id>/dashboard`). It passes its
+      data-layer checks but has never been loaded in a browser. It is the room display —
+      ticker, activity feed, standings, join QR code — so it deserves a look before it
+      goes on a TV in front of people.
+- [ ] **Click through the host controls** (`/lobby/<id>/manage`): rename, lock, archive,
+      remove a player, delete a bet, undo an accidental accept. All are enforced and
+      tested in Postgres; the UI paths are unexercised.
+- [ ] **Pin down the OAuth consent screen's publishing status** —
+      [console](https://console.cloud.google.com/auth/audience?project=525073490980).
+      A second unrelated account signed in without being added anywhere, which strongly
+      suggests it is already published. If it is *not*, the tell is everyone getting
+      signed out roughly 7 days apart, because Testing mode expires refresh tokens
+      weekly and caps you at 100 users. Publishing is instant with no verification
+      review, since the app requests only `email profile` (non-sensitive scopes).
+      The consent screen is shared with wellness-planner, but publishing does not
+      loosen that app — it gates on its own `allowed_users` table plus RLS, not on
+      Google's test-user list.
+- [ ] **Confirm realtime updates arrive without a refresh** across two devices. The
+      subscriptions and the reconnect resync are in place and correct at the database
+      level, but nobody has explicitly confirmed a bet appearing on a second screen
+      untouched.
+
 ## Not built
 
 Ordered by how much they'd add relative to their cost.

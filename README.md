@@ -97,4 +97,4 @@ docs/          product spec, architecture, deployment, roadmap
 - [docs/PRD.md](docs/PRD.md) — what the product is and what it deliberately isn't
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — data model, security model, realtime
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Google OAuth, Vercel, Supabase
-- [docs/ROADMAP.md](docs/ROADMAP.md) — what's built and what isn't
+- [docs/ROADMAP.md](docs/ROADMAP.md) — what's built, what's verified, and the open loose ends
