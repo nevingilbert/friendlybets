@@ -68,9 +68,9 @@ export function ActivityFeed({ bets, nameOf }) {
 
   return (
     <div className="flex min-h-0 flex-col rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5">
-      <h2 className="mb-4 text-xl font-bold tracking-widest text-zinc-400 uppercase">Activity</h2>
+      <h2 className="tv-section mb-4 font-bold tracking-widest text-zinc-400 uppercase">Activity</h2>
       {items.length === 0 ? (
-        <p className="py-8 text-center text-xl text-zinc-600">Nothing has happened yet</p>
+        <p className="tv-body py-8 text-center text-zinc-600">Nothing has happened yet</p>
       ) : (
         <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto">
           {items.map((bet) => (
@@ -80,8 +80,8 @@ export function ActivityFeed({ bets, nameOf }) {
                 ACCENT[bet.status] ?? ACCENT.OPEN
               }`}
             >
-              <p className="text-lg leading-relaxed text-zinc-300">{describe(bet, nameOf)}</p>
-              <p className="mt-0.5 text-xs text-zinc-600">{formatRelative(lastTouched(bet))}</p>
+              <p className="tv-body leading-relaxed text-zinc-300">{describe(bet, nameOf)}</p>
+              <p className="tv-label mt-0.5 text-zinc-600">{formatRelative(lastTouched(bet))}</p>
             </li>
           ))}
         </ul>

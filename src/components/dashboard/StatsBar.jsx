@@ -7,16 +7,16 @@ const CARDS = [
 
 export function StatsBar({ stats }) {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       {CARDS.map((card) => (
         <div
           key={card.key}
           className={`flex flex-col items-center justify-center rounded-2xl border py-5 ${card.className}`}
         >
-          <span className="text-xs font-semibold tracking-[0.2em] text-zinc-400 uppercase">
+          <span className="tv-label font-semibold tracking-[0.2em] text-zinc-400 uppercase">
             {card.label}
           </span>
-          <span className="mt-1 text-5xl font-extrabold tabular-nums">{stats[card.key] ?? 0}</span>
+          <span className="tv-stat mt-1 font-extrabold tabular-nums">{stats[card.key] ?? 0}</span>
         </div>
       ))}
     </div>

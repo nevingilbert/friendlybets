@@ -81,3 +81,30 @@ body {
   background-color: #3f3f46;
   border-radius: 9999px;
 }
+
+/* ---------------------------------------------------------------------------
+   TV mode (the lobby dashboard).
+
+   A phone is held at arm's length; a television is read from across a room, so
+   this type scales with the viewport rather than sitting at a fixed rem. Each
+   clamp keeps a laptop-sized floor and a ceiling, so a 4K panel does not blow
+   one proposition up to fill the screen.
+
+   These are used only by src/pages/LobbyDashboard.jsx and src/components/dashboard/*.
+   Nothing a guest sees on their phone touches them.
+--------------------------------------------------------------------------- */
+.tv-hero    { font-size: clamp(1.75rem, 3.4vw, 5rem); line-height: 1.05; }
+.tv-prop    { font-size: clamp(1.5rem, 2.9vw, 4.25rem); }
+.tv-section { font-size: clamp(1.125rem, 1.5vw, 2.1rem); }
+.tv-name    { font-size: clamp(1.125rem, 1.6vw, 2.3rem); }
+.tv-body    { font-size: clamp(1rem, 1.35vw, 1.95rem); }
+.tv-label   { font-size: clamp(0.75rem, 0.95vw, 1.35rem); }
+.tv-stat    { font-size: clamp(2rem, 3.6vw, 5.5rem); }
+.tv-code    { font-size: clamp(1.5rem, 2.4vw, 3.6rem); }
+
+/* Televisions overscan — keep content off the outer edge. */
+.tv-pad { padding: max(1.25rem, 2.2vw); }
+
+/* Scanned from a sofa, not held in a hand. The encoder renders at 2x the `size`
+   prop, so 200 gives 400 real pixels — enough to scale up without going soft. */
+.tv-qr { width: clamp(8rem, 11vw, 17rem); height: auto; }

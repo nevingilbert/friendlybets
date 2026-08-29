@@ -14,7 +14,7 @@ export function OpenBetsTicker({ bets, nameOf }) {
   if (bets.length === 0) {
     return (
       <div className="flex min-h-52 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/70 p-8">
-        <p className="text-center text-2xl text-zinc-500">
+        <p className="tv-section text-center text-zinc-500">
           No open bets — post one from your phone
         </p>
       </div>
@@ -31,14 +31,14 @@ export function OpenBetsTicker({ bets, nameOf }) {
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500" />
 
       <div key={bet.id} className="animate-fade-up">
-        <p className="text-4xl leading-tight font-bold text-balance text-zinc-50">
+        <p className="tv-prop leading-tight font-bold text-balance text-zinc-50">
           {bet.proposition}
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-4">
-          <span className="rounded-full border border-violet-500/30 bg-violet-500/15 px-5 py-2 text-2xl font-bold text-violet-300">
+          <span className="tv-name rounded-full border border-violet-500/30 bg-violet-500/15 px-5 py-2 font-bold text-violet-300">
             {bet.stake}
           </span>
-          <p className="text-xl text-zinc-400">
+          <p className="tv-body text-zinc-400">
             <span className="font-semibold text-zinc-100">{nameOf(bet.creator_id)}</span> says{' '}
             <span
               className={
