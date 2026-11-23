@@ -22,7 +22,7 @@ party on a single WiFi network; lobbies generalise that to any group, anywhere.
 - Everyone in a lobby sees activity update live, including a big-screen view for a room.
 - A lobby is private. Its bets, players and standings are visible only to people who
   joined it.
-- Costs nothing to run at party scale (Supabase and Vercel free tiers).
+- Costs nothing to run at party scale (Neon and Vercel free tiers).
 
 ## Non-goals
 

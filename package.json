@@ -1,35 +1,48 @@
 {
   "name": "friendlybets",
   "private": true,
-  "version": "2.0.0",
-  "type": "module",
-  "description": "Create a lobby, share the link, bet your friends on anything.",
+  "version": "3.0.0",
+  "description": "Create a lobby, share the link, bet your friends on anything. Next.js + Neon, deployed on Vercel.",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "eslint .",
-    "db:push": "supabase db push",
-    "db:diff": "supabase db diff --linked"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:sql": "node scripts/verify-sql.mjs",
+    "db:migrate": "node scripts/db.mjs migrate",
+    "db:status": "node scripts/db.mjs status",
+    "db:reset": "node scripts/db.mjs reset",
+    "db:import-supabase": "node scripts/import-supabase.mjs",
+    "check:secrets": "node scripts/check-bundle.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run test:sql && npm run build && npm run check:secrets"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
+    "next": "16.4.6",
+    "next-auth": "^5.0.0-beta.32",
+    "postgres": "^3.4.9",
     "qrcode": "^1.5.4",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-router-dom": "^7.13.0"
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@tailwindcss/vite": "^4.1.18",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "tailwindcss": "^4.1.18",
-    "vite": "^7.2.4"
+    "@electric-sql/pglite": "^0.5.8",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

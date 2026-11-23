@@ -38,5 +38,16 @@ pnpm-debug.log*
 # tooling state — machine-specific, never shared
 .claude/settings.local.json
 .vercel/
-supabase/.temp/
-supabase/.branches/
+
+# next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# a downloaded Supabase backup holds every user's email — never commit it
+*.backup
+*.backup.gz
+*.sql.gz
+supabase-backup/
+.vercel
+.env*

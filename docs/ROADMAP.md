@@ -9,11 +9,11 @@ What exists today, and what's been considered but not built. Specs live in
 - Lobbies: create, join by link or six-character code, rename, lock, archive, leave
 - Invite flow: shareable link, join code, QR code, native share sheet
 - Bets: post, take, cancel, resolve, mark paid — each step guarded in Postgres
-- Live updates across every screen in a lobby via Supabase Realtime
+- Live updates across every screen in a lobby, by polling a per-lobby snapshot
 - Standings with an "owes" column that clears when a stake is settled
 - Big-screen dashboard with ticker, activity feed, standings and a join QR code
 - Host moderation: delete a bet, reopen a mistaken accept, remove a player
-- Row Level Security isolating every lobby, verified end to end
+- Every lobby isolated by membership checks in the database functions, replayed by `npm run test:sql`
 
 ## Verified in production
 
@@ -44,10 +44,11 @@ deployment that were never pinned down.
       The consent screen is shared with wellness-planner, but publishing does not
       loosen that app — it gates on its own `allowed_users` table plus RLS, not on
       Google's test-user list.
-- [ ] **Confirm realtime updates arrive without a refresh** across two devices. The
-      subscriptions and the reconnect resync are in place and correct at the database
-      level, but nobody has explicitly confirmed a bet appearing on a second screen
-      untouched.
+- [ ] **Re-verify in production after the move to Neon** (November 2026). Locally, against
+      a stand-in database with test sessions, every flow was clicked through: sign-in screen,
+      lobby list, post / take / resolve / mark paid, rename, invite auto-join, TV mode at
+      1080p, and a change made by another user appearing on an open screen within one poll.
+      Real Google sign-in and the imported data have not been exercised on the deployment.
 
 ## Not built
 
@@ -55,7 +56,7 @@ Ordered by how much they'd add relative to their cost.
 
 ### Comments on bets
 Trash talk is most of the fun and there's nowhere to put it. Needs a `comments` table,
-a thread on the bet detail screen, a count on the card, and a realtime subscription.
+a thread on the bet detail screen, a count on the card, and comments in the lobby snapshot.
 Rate limiting matters — one comment per person per bet per ten seconds.
 
 ### Bet expiry
@@ -74,8 +75,8 @@ One bet, several people against the creator. Needs a `pairings` table since a si
 
 ### Push notifications
 Web Push via VAPID to pull people back when the tab is backgrounded. Requires storing
-subscriptions and something server-side to send them — a Supabase Edge Function, most
-likely. iOS only supports this for installed PWAs, which is a real limitation for a
+subscriptions and something server-side to send them — a Server Action or route
+handler, now that there is a server. iOS only supports this for installed PWAs, which is a real limitation for a
 phone-first app.
 
 ### Smaller things
@@ -93,15 +94,16 @@ Carried in the old spec, deliberately not carried forward:
   old phone-number identity model. Google OAuth solves it better with no spare handset.
 - **Partiful guest-list sync.** Depended on an unofficial reverse-engineered API and a
   manually pasted auth token that expires. Sharing a link is simpler and always works.
-- **LAN-only operation.** The whole point of moving to Vercel and Supabase was to stop
+- **LAN-only operation.** The whole point of moving to Vercel and a hosted database was to stop
   requiring everyone on one WiFi network.
 
 ## Working on this
 
-- Reads go through RLS; writes go through a `SECURITY DEFINER` function. Adding a mutation
-  means adding a function, not an `INSERT` policy — see
+- Every write is a plpgsql function that takes the acting user's id and checks permission
+  itself; every read is scoped by that id. Adding a mutation means adding a function, a
+  Server Action that calls it, and its guards to `scripts/verify-sql.mjs` — see
   [ARCHITECTURE.md](ARCHITECTURE.md).
 - Migrations are append-only. Never edit one that's been applied.
 - Anything touching bets should stay live: a change one person makes has to reach every
-  other screen without a refresh.
-- `npm run lint` and `npm run build` should both pass clean before a commit.
+  other screen without a refresh — put it in `lobby_snapshot`.
+- `npm run verify` should pass clean before a commit.
