@@ -12,8 +12,8 @@ the Vercel marketplace — the same setup as `times-tables`.
 | Database | Neon, added with `vercel integration add neon` |
 | Google OAuth client | `525073490980-i2iev0h7g951oj85e8af9vr8oc6cbp1v.apps.googleusercontent.com` |
 
-The old Supabase project (`ickmpbuxgzxznalzjbdz`) is paused and no longer used. Its data
-was carried over with `npm run db:import-supabase` — see [section 5](#5-importing-the-old-supabase-data).
+The old Supabase project (`ickmpbuxgzxznalzjbdz`) was deleted in November 2026. Its data
+was carried over first with `npm run db:import-supabase` — see [section 5](#5-importing-the-old-supabase-data).
 
 ---
 
@@ -49,9 +49,6 @@ Services → Credentials → the web client):
 https://bets.gilbyy.com/api/auth/callback/google
 http://localhost:3000/api/auth/callback/google
 ```
-
-The old `https://ickmpbuxgzxznalzjbdz.supabase.co/auth/v1/callback` entry can be removed
-once the move is live.
 
 A missing or wrong entry fails with `redirect_uri_mismatch` on Google's screen. To see
 which callback the deployment is actually generating without signing in, request
@@ -99,10 +96,11 @@ npm run dev                  # http://localhost:3000
 
 ## 5. Importing the old Supabase data
 
-One-off, and already done for the production database. Kept for the record and in case it
-needs repeating.
+One-off, done for the production database in November 2026 (2 users, 1 lobby, 1 bet).
+The Supabase project has since been deleted, so this cannot be repeated from it; the steps
+are kept for the record.
 
-1. Download a backup of the paused Supabase project from its dashboard (the paused project's
+1. Download a backup of the Supabase project from its dashboard (the paused project's
    page, or Database → Backups). Keep it out of git — `.gitignore` already excludes
    `*.backup` and `*.sql.gz`, because it contains every user's email address.
 2. Dry run — reads the file and prints counts, writes nothing:
